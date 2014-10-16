@@ -4,6 +4,8 @@ class CryptedMessage {
 
 	var $cryptedText;
 	var $transformations = array();
+	var $alphabetFrequence;
+	var $sousTextes = array();
 	
 	function CryptedMessage($message) {
         $this->cryptedText = $message;
@@ -16,7 +18,7 @@ class CryptedMessage {
 		$decryptedText = "";
 		
 		$cryptedTextAlphabetFrequence->orderByFrequence();
-		$cryptedTextAlphabetFrequence->toString();
+		$this->alphabetFrequence = $cryptedTextAlphabetFrequence;
 
 		//We replace letter by letter
 		
@@ -66,17 +68,81 @@ class CryptedMessage {
 		return($texteDecrypt);
 	}
 	
-	function calculIndiceCoincidence() {
+	function decoupageTexte($tailleCle) {
 		$sum = 0;
 		$cryptedTextAlphabetFrequence = new AlphabetFrequence;
 		$cryptedTextAlphabetFrequence->createAlphabetFrequenceFromText($this->cryptedText);
-		$n = strlen($this->cryptedText);
-		
-		foreach ($cryptedTextAlphabetFrequence->couplesLetterFrequence as $value){
-			$nq = substr_count($this->cryptedText, $value['letter']);
-			$sum += ($nq*($nq - 1)) / ($n*($n-1));
+		$tab = array();
+		for($i=0;$i<$tailleCle;$i++) {
+			$tab[$i] = "";
 		}
-		return $sum;
+		//On sépare notre texte suivant la taille de la clé
+		$tailleText = strlen($this->cryptedText);
+		for($i=0;$i<$tailleText;$i++) {
+			$lettre = substr($this->cryptedText, $i, 1);
+			$tab[$i%$tailleCle] .= $lettre;
+		}
+		
+		$this->sousTextes = array();
+		foreach ($tab as $value){
+			array_push($this->sousTextes, new CryptedMessage($value));
+		}
+	}
+	
+	function decryptWithDecoupage($destinationAlphabetFrequence) {
+		$tab = array();
+		$i = 0;
+		//On traduit les sous-textes découpés par la taille de clé un à un 
+		foreach ($this->sousTextes as $value){
+			$tab[$i] = $value->decryptWithAlphabetFrequence($destinationAlphabetFrequence);
+			$i++;
+		}
+		
+		//On assemble les morceaux en un seul texte
+		$tailleText = strlen($this->cryptedText);
+		$texteDecrypte = "";
+		for($i=0;$i<strlen($tab[0]);$i++) {
+			for($j = 0; $j < count($tab); $j++) {
+				if($i <= strlen($tab[$j])) {
+					$lettre = substr($tab[$j], $i, 1);
+					$texteDecrypte .= $lettre;
+				}
+			}
+		}
+		return $texteDecrypte;
+	}
+	
+	function calculIndiceCoincidence($tailleCle) {
+		$sum = 0;
+		$cryptedTextAlphabetFrequence = new AlphabetFrequence;
+		$cryptedTextAlphabetFrequence->createAlphabetFrequenceFromText($this->cryptedText);
+		$tab = array();
+		for($i=0;$i<$tailleCle;$i++) {
+			$tab[$i] = "";
+		}
+		//On sépare notre texte suivant la taille de la clé
+		$tailleText = strlen($this->cryptedText);
+		for($i=0;$i<$tailleText;$i++) {
+			$lettre = substr($this->cryptedText, $i, 1);
+			$tab[$i%$tailleCle] .= $lettre;
+		}
+		
+		//On calcule l'indice de coincidence de chaque colonne de notre clé puis on fait une moyenne
+		$moy = 0;
+		foreach ($tab as $value){
+			$sum = 0;
+			$n = strlen($value);
+			foreach ($cryptedTextAlphabetFrequence->couplesLetterFrequence as $myalphabetletter){
+				if(substr_count($value, $myalphabetletter['letter']) > 0) {
+					$nq = substr_count($value, $myalphabetletter['letter']);
+					$sum += ($nq*($nq - 1)) / ($n*($n-1));
+				}
+			}
+			
+			$moy+=$sum;
+		}
+		$moy= $moy / $tailleCle;
+		return $moy;
 	}
 }
 
