@@ -90,36 +90,15 @@ $textDecripteAvecDecoupage = $cryptedMessage->decryptWithDecoupage($alphabetFreq
 echo "<h2>Texte decrypte via un decoupage de cle de taille 6 (puis analyse frequentielle)</h2>";
 echo $textDecripteAvecDecoupage."<p></p>";
 
-//Transformations manuels
-/*  CORRESPOND AUX REMPLACEMENTS SELON LES PLUS FORTES FREQUENCES
-$cryptedMessage->addTransformationLetters("X", " ");
-$cryptedMessage->addTransformationLetters("K", "E");
-$cryptedMessage->addTransformationLetters("Y", "T");
-$cryptedMessage->addTransformationLetters("F", "A");
-$cryptedMessage->addTransformationLetters("S", "O");
-$cryptedMessage->addTransformationLetters("L", "N");
-$cryptedMessage->addTransformationLetters("T", "I");
-$cryptedMessage->addTransformationLetters("G", "R");
-$cryptedMessage->addTransformationLetters("Z", "S");
-$cryptedMessage->addTransformationLetters("M", "C");
-$cryptedMessage->addTransformationLetters("Q", "L");
-$cryptedMessage->addTransformationLetters("R", "H");
-$cryptedMessage->addTransformationLetters("J", "D");
-$cryptedMessage->addTransformationLetters("U", "M");
-$cryptedMessage->addTransformationLetters("D", "U");
-$cryptedMessage->addTransformationLetters("E", "P");
-$cryptedMessage->addTransformationLetters("I", "F");
-$cryptedMessage->addTransformationLetters("V", "G");
-$cryptedMessage->addTransformationLetters("N", "B");
-$cryptedMessage->addTransformationLetters("O", "Y");
-$cryptedMessage->addTransformationLetters("W", "W");
-$cryptedMessage->addTransformationLetters(" ", "V");
-$cryptedMessage->addTransformationLetters("H", "K");
-$cryptedMessage->addTransformationLetters("B", "Q");
-$cryptedMessage->addTransformationLetters("A", "Z");
-$cryptedMessage->addTransformationLetters("P", "J");
-$cryptedMessage->addTransformationLetters("C", "X");
-*/
+
+/* Test pour Cesar */
+$alphabetArray = array(" ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+$alphabet = new Alphabet();
+$alphabet->add_elements($alphabetArray);
+
+$messageCesar = new CryptedMessage("UCNWV");
+$messageCesar->brutForceCesar($alphabet);
+
 
 
 

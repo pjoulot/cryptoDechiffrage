@@ -112,6 +112,53 @@ class CryptedMessage {
 		return $texteDecrypte;
 	}
 	
+	function brutForceDecoupageCesar($alphabet) {
+		$sousTextesDecales = array();
+		foreach($this->sousTextes as $sousTexte) {
+			arraypush($sousTextesDecales, brutForceCesar($alphabet));
+		}
+		//Boucle avec nbr itérations = taille de la clé
+		foreach($sousTextesDecales as $id => $sousTexteDecale) {
+			//Boucle où chaque itération est une possibilité avec un décalage (César) de i	
+			foreach($sousTexteDecale as $idDecalage => $possibiliteDecalage) {
+				$texteDecalage = $possibiliteDecalage;
+				//On parcourt les autres sous-textes
+				foreach($sousTextesDecales as $idSuiv => $sousTexteDecaleSuiv) {
+					if($id != $idSuiv) {
+						foreach($sousTexteDecaleSuiv as $idDecalageSuiv => $possibiliteDecalageSuiv) {
+							$texteDecalage.= $possibiliteDecalageSuiv;
+							echo $texteDecalage;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	function brutForceCesar($alphabet) {
+		
+		echo count($alphabet->elements);
+		$tailleAlphabet = count($alphabet->elements);
+		$textesDecodes = array();
+		for($i = 0; $i < $tailleAlphabet; $i++) {
+			$textDecale = "";
+			$tailleText = strlen($this->cryptedText);
+			for($j=0;$j<$tailleText;$j++) {
+				$lettre = substr($this->cryptedText, $j, 1);
+				$positionLetter = 0;
+				foreach($alphabet->elements as $value) {
+					if($lettre == $value) {
+						break;
+					}
+					$positionLetter++;
+				}
+				$textDecale .= $alphabet->elements[($positionLetter + $i)%$tailleAlphabet];
+			}
+			array_push($textesDecodes, $textDecale);
+		}
+		return ($textesDecodes);
+	}
+	
 	function calculIndiceCoincidence($tailleCle) {
 		$sum = 0;
 		$cryptedTextAlphabetFrequence = new AlphabetFrequence;
