@@ -182,6 +182,24 @@ class CryptedMessage {
 		
 	}
 	
+	function convertClefToNumbers($clef, $alphabet) {
+		$decalages = array();
+		for($i=0;$i < strlen($clef); $i++) {
+			$lettre = substr($clef, $i, 1);
+			$decalage = 0;
+			foreach($alphabet->elements as $lettreAlphabet) {
+				if($lettre == $lettreAlphabet) {
+					break;
+				}
+				else {
+					$decalage++;
+				}
+			}
+			array_push($decalages, $decalage);
+		}
+		return $decalages;
+	}
+	
 	function brutForceDecoupageCesarBis($sousTextesDecales, $chaine, $level) {
 		foreach($sousTextesDecales[$level] as $id => $sousTexteDecale) {
 					if($level == count($sousTextesDecales)-1) {
