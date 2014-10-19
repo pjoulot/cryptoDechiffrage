@@ -84,11 +84,15 @@ $cryptedMessage->decoupageTexte(16);
 $textDecripteAvecDecoupage = $cryptedMessage->decryptWithDecoupage($alphabetFrequence);
 echo "<h2>Texte decrypte via un decoupage de cle de taille 16 (puis analyse frequentielle)</h2>";
 echo $textDecripteAvecDecoupage."<p></p>";
-
+/*
 $cryptedMessage->decoupageTexte(6);
 $textDecripteAvecDecoupage = $cryptedMessage->decryptWithDecoupage($alphabetFrequence);
 echo "<h2>Texte decrypte via un decoupage de cle de taille 6 (puis analyse frequentielle)</h2>";
 echo $textDecripteAvecDecoupage."<p></p>";
+*/
+
+echo "<h2>Analyse de frequences des 16 morceaux</h2>";
+$cryptedMessage->analizeFrequenceSubtexts();
 
 
 /* Test pour Cesar */
@@ -96,8 +100,12 @@ $alphabetArray = array(" ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K
 $alphabet = new Alphabet();
 $alphabet->add_elements($alphabetArray);
 
-$messageCesar = new CryptedMessage("UCNWV");
-$messageCesar->brutForceCesar($alphabet);
+//Trop long à exécuter
+//$cryptedMessage->brutForceDecoupageCesar($alphabet);
+echo "<h2>Utilisation d'une cle par etape en substituant grace aux etudes de frequences</h2>";
+//echo $cryptedMessage->decryptDecoupageWithKey($alphabet, array(0,8,6,0,0,10,0,0,0,0,7,0,0,0,23,0));
+//echo $cryptedMessage->decryptDecoupageWithKey($alphabet, array(0,8,6,0,2,10,0,22,0,16,7,16,0,3,23,0));
+echo $cryptedMessage->decryptDecoupageWithKey($alphabet, array(13,8,6,23,2,10,9,22,20,21,7,21,3,8,23,21));
 
 
 

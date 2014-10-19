@@ -8,7 +8,14 @@ class CryptedMessage {
 	var $sousTextes = array();
 	
 	function CryptedMessage($message) {
-        $this->cryptedText = $message;
+        //On remplit le message
+		$this->cryptedText = $message;
+		
+		//On remplit l'alphabet fréquence
+		$cryptedTextAlphabetFrequence = new AlphabetFrequence;
+		$cryptedTextAlphabetFrequence->createAlphabetFrequenceFromText($this->cryptedText);
+		$cryptedTextAlphabetFrequence->orderByFrequence();
+		$this->alphabetFrequence = $cryptedTextAlphabetFrequence;
     }
 	
 	function decryptWithAlphabetFrequence($destinationAlphabetFrequence) {
@@ -36,6 +43,13 @@ class CryptedMessage {
 		}
 
 		return $decryptedText;
+	}
+	
+	function analizeFrequenceSubtexts() {
+		foreach ($this->sousTextes as $value){
+			echo $value->cryptedText."<br/>";
+			$value->alphabetFrequence->toString();
+		}
 	}
 	
 	/* Your transformation array must be like that model: {letter1, letter2} where we tranform letter1 to letter2*/
@@ -112,32 +126,94 @@ class CryptedMessage {
 		return $texteDecrypte;
 	}
 	
-	function brutForceDecoupageCesar($alphabet) {
-		$sousTextesDecales = array();
-		foreach($this->sousTextes as $sousTexte) {
-			arraypush($sousTextesDecales, brutForceCesar($alphabet));
-		}
-		//Boucle avec nbr itérations = taille de la clé
-		foreach($sousTextesDecales as $id => $sousTexteDecale) {
-			//Boucle où chaque itération est une possibilité avec un décalage (César) de i	
-			foreach($sousTexteDecale as $idDecalage => $possibiliteDecalage) {
-				$texteDecalage = $possibiliteDecalage;
-				//On parcourt les autres sous-textes
-				foreach($sousTextesDecales as $idSuiv => $sousTexteDecaleSuiv) {
-					if($id != $idSuiv) {
-						foreach($sousTexteDecaleSuiv as $idDecalageSuiv => $possibiliteDecalageSuiv) {
-							$texteDecalage.= $possibiliteDecalageSuiv;
-							echo $texteDecalage;
-						}
+	function decryptDecoupageWithKey($alphabet, $key) {
+		$tab = array();
+		$i = 0;
+		//On traduit les sous-textes découpés par la taille de clé un à un 
+		foreach ($this->sousTextes as $value){
+			$decalage = $key[$i];
+			$traduced = "";
+			for($j=0;$j<strlen($value->cryptedText);$j++) {
+				$lettre = substr($value->cryptedText, $j, 1);
+				$k =0;
+				foreach ($alphabet->elements as $letter){
+					if($letter == $lettre) {
+						break;
 					}
+					$k++;
+				}
+				$traduced .= $alphabet->elements[($k + $decalage)%count($alphabet->elements)];
+			}
+			$tab[$i] = $traduced;
+			$i++;
+		}
+		
+		//On assemble les morceaux en un seul texte
+		$tailleText = strlen($this->cryptedText);
+		$texteDecrypte = "";
+		for($i=0;$i<strlen($tab[0]);$i++) {
+			for($j = 0; $j < count($tab); $j++) {
+				if($i <= strlen($tab[$j])) {
+					$lettre = substr($tab[$j], $i, 1);
+					$texteDecrypte .= $lettre;
 				}
 			}
+		}
+		return $texteDecrypte;
+	}
+	
+	function brutForceDecoupageCesar($alphabet) {
+		/* Prétraitement séquentiel */
+		$sousTextesDecales = array();
+		foreach($this->sousTextes as $sousTexte) {
+			array_push($sousTextesDecales, $sousTexte->brutForceCesar($alphabet));
+		}
+		/*
+		var_dump($sousTextesDecales);
+		
+		$sousTextesDecales = array();
+		$sousTextesDecales[0] = array("POM", "API", "POI");
+		$sousTextesDecales[1] = array("REN", "FEU", "ABR");
+		$sousTextesDecales[2] = array("MER", "COQ", "SEL");
+		$sousTextesDecales[3] = array("SA", "BO", "BI");
+		*/
+		/* Traitement récursif */
+		$this->brutForceDecoupageCesarBis($sousTextesDecales, array(), 0);
+		
+	}
+	
+	function brutForceDecoupageCesarBis($sousTextesDecales, $chaine, $level) {
+		foreach($sousTextesDecales[$level] as $id => $sousTexteDecale) {
+					if($level == count($sousTextesDecales)-1) {
+						$chaine2 = $chaine;
+						array_push($chaine2, $sousTexteDecale);
+						//var_dump($chaine2);
+						//echo($chaine.$sousTexteDecale."<br/>");
+						//Il faut remettre la chaine dans l'ordre
+						$chaineFinale = "";
+						$tailleText = strlen($this->cryptedText);
+						$positionLetter = 0;
+						for($i=0;$i<$tailleText;$i++) {
+							$lettre = substr($chaine2[$i%count($chaine2)], $positionLetter, 1);
+							$chaineFinale .= $lettre;
+							if($i%(count($chaine2)) == count($chaine2)-1) {
+								$positionLetter++;
+							}
+						}
+						$myFile= fopen("brutForce.txt", "a");
+						fwrite($myFile, $chaineFinale."\n");
+						fclose($myFile);
+						//echo $chaineFinale."<br/>";
+					}
+					else {
+						$chaine2 =  $chaine;
+						array_push($chaine2, $sousTexteDecale);
+						$this->brutForceDecoupageCesarRecurBis($sousTextesDecales, $chaine2, $level+1);
+					}
 		}
 	}
 	
 	function brutForceCesar($alphabet) {
-		
-		echo count($alphabet->elements);
 		$tailleAlphabet = count($alphabet->elements);
 		$textesDecodes = array();
 		for($i = 0; $i < $tailleAlphabet; $i++) {
