@@ -105,6 +105,8 @@ $alphabet->add_elements($alphabetArray);
 echo "<h2>Utilisation d'une cle par etape en substituant grace aux etudes de frequences</h2>";
 //echo $cryptedMessage->decryptDecoupageWithKey($alphabet, array(0,8,6,0,0,10,0,0,0,0,7,0,0,0,23,0));
 //echo $cryptedMessage->decryptDecoupageWithKey($alphabet, array(0,8,6,0,2,10,0,22,0,16,7,16,0,3,23,0));
+echo $cryptedMessage->decryptDecoupageWithKey($alphabet, array(0,8,6,23,2,10,0,22,0,0,0,0,0,0,23,0));
+echo "<br/><br/>TLE OJ <br/><br/>";
 //echo $cryptedMessage->decryptDecoupageWithKey($alphabet, array(13,8,6,23,2,10,9,22,20,21,7,21,3,8,23,21));
 //MHFWBJIVTUGKCHWU
 echo $cryptedMessage->decryptDecoupageWithKey($alphabet, $cryptedMessage->convertClefToNumbers("MHFWBJIVTUGUCHWU", $alphabet));

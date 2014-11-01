@@ -6,6 +6,7 @@ class CryptedMessage {
 	var $transformations = array();
 	var $alphabetFrequence;
 	var $sousTextes = array();
+	var $colonnesImpossibles = array();
 	
 	function CryptedMessage($message) {
         //On remplit le message
@@ -102,6 +103,128 @@ class CryptedMessage {
 			array_push($this->sousTextes, new CryptedMessage($value));
 		}
 	}
+	
+	function decoupageBlocs($tailleBloc) {
+		$tab = array();
+		for($i=0;$i<=round((strlen($this->cryptedText)/$tailleBloc));$i++) {
+			$tab[$i] = "";
+		}
+		$tailleText = strlen($this->cryptedText);
+		$j = 0;
+		$firstTime = false;
+		for($i=0;$i<$tailleText;$i++) {
+			$lettre = substr($this->cryptedText, $i, 1);
+			if($firstTime && $i % $tailleBloc == 0) {
+				$j++;
+			}
+			$tab[$j] .= $lettre;
+			$firstTime = true;
+		}
+		$this->sousTextes = array();
+		foreach ($tab as $value){
+			if($value != "") {
+				array_push($this->sousTextes, new CryptedMessage($value));
+			}
+		}
+	}
+	
+	function defineColonnesImpossibles() {
+		$occ = 0;
+		foreach ($this->sousTextes as $value){
+			if($occ == 0) {
+				$echantillon = $value;
+			}
+			$occ++;
+			
+			$tailleText = strlen($value->cryptedText);
+			$tabl = array();
+			for($i=0;$i<$tailleText;$i++) {
+				$lettre = substr($value->cryptedText, $i, 1);
+				if($lettre == " ") {
+					array_push($tabl, $i);
+				}
+			}
+			array_push($this->colonnesImpossibles, $tabl);
+		}
+		var_dump($this->colonnesImpossibles);
+		
+		$positionsPossibles = array();
+		for($g=0; $g < strlen($echantillon->cryptedText);$g++) {
+			array_push($positionsPossibles, $g);
+		}
+		for($g=0; $g < strlen($echantillon->cryptedText);$g++) {
+			echo "Colonne ".$g."<br/>";
+			$posPossibles = $positionsPossibles;
+			foreach ($this->colonnesImpossibles as $value){
+				if(in_array($value, $g)) {
+					if($g == 0) {
+						if(in_array($value, $g+1) && in_array($value, $g)) {
+							$g1 =$g+1;
+							echo "(".$g.",".$g1.")";
+						}
+					}
+					elseif($g == strlen($echantillon->cryptedText)) {
+					
+					}
+					else {
+					}
+				}
+			}
+		}
+		
+	}
+	
+	function applyTranslations() {
+		foreach($this->sousTextes as $value) {
+			$tailleText = strlen($value->cryptedText);
+			$chaineFinale = "";
+			for($i=0;$i<$tailleText;$i++) {
+				$chaineFinale .= "-";
+			}
+			foreach($this->transformations as $transformation) {
+				
+				$lettre1 = substr($value->cryptedText, $transformation[0], 1);
+				for($i=0;$i<$tailleText;$i++) {
+					if($i == $transformation[1]) {
+						$chaineFinale = substr_replace($chaineFinale, $lettre1, $i, 1);
+					}
+				}
+			}
+			$value->cryptedText = $chaineFinale;
+		}
+	}
+	
+	function toStringSubStringReunited() {
+		foreach($this->sousTextes as $value) {
+			echo $value->cryptedText;
+		}
+	}
+	
+	function sousTextesToString() {
+		$j = 0;
+		echo "<table>";
+		echo "<tr>";
+			for($i=-1;$i<13;$i++) {
+				echo "<td>".$i."</td>";
+			}
+			echo "<td>Nbr Espaces consecutifs</td>";
+		echo "</tr>";
+		foreach($this->sousTextes as $value) {
+			echo "<tr>";
+			$tailleText = strlen($value->cryptedText);
+			echo "<td>".$j."</td>";
+			for($i=0;$i<$tailleText;$i++) {
+				$lettre = substr($value->cryptedText, $i, 1);
+				echo "<td>".$lettre."</td>";
+			}
+			echo "<td>".countCaractereConsecutifs($value->cryptedText, " ")."</td";
+			echo "</tr>";
+			$j++;
+		}
+		echo "</table>";
+	}
+	
+
 	
 	function decryptWithDecoupage($destinationAlphabetFrequence) {
 		$tab = array();
@@ -286,5 +409,34 @@ class CryptedMessage {
 		return $moy;
 	}
 }
+
+	function countCaractereConsecutifs($chaine, $caractere) {
+		$tailleText = strlen($chaine);
+		$count = 0;
+		$nbr = 0;
+		$prec = 0;
+		for($j=0;$j<$tailleText;$j++) {
+				$lettre = substr($chaine, $j, 1);
+				if($lettre == $caractere) {
+					if($prec == 1) {
+						$nbr++;
+					}
+					else {
+						if($nbr > $count) {
+							$count = $nbr;
+						}
+						$nbr = 1;
+					}
+					$prec = 1;
+				}
+				else {
+					$prec = 0;
+				}
+		}
+		if($nbr > $count) {
+			$count = $nbr;
+		}
+		return $count;
+	}
 
 ?>
